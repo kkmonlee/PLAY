@@ -2,10 +2,11 @@
 using NAudio;
 using NAudio.Wave;
 using Timer = System.Timers.Timer;
+using FlagLib.Extensions;
 
 namespace PLAY.Core
 {
-    public class AudioPlayer : IDisposable
+    public sealed class AudioPlayer : IDisposable
     {
         private IWavePlayer _wavePlayer;
         private WaveChannel32 _inputStream;
@@ -106,20 +107,17 @@ namespace PLAY.Core
             if (_wavePlayer != null)
             {
                 _wavePlayer.Dispose();
-                _wavePlayer = null;
+                //_wavePlayer = null;
             }
 
             if (_inputStream != null)
             {
                 _inputStream.Close();
             }
-        }
 
-        protected virtual void OnSongFinished(EventArgs e)
-        {
-            if (SongFinished != null)
+            if (_songFinishedTimer != null)
             {
-                SongFinished(this, e);
+                _songFinishedTimer.Dispose();
             }
         }
 
@@ -129,7 +127,7 @@ namespace PLAY.Core
             if (_inputStream != null)
             {
                 _inputStream.Dispose();
-                _inputStream = null;
+                //_inputStream = null;
             }
 
             LoadedSong = null;
@@ -198,7 +196,7 @@ namespace PLAY.Core
         {
             if (CurrentTime < TotalTime) return;
             Stop();
-            OnSongFinished(EventArgs.Empty);
+            SongFinished.RaiseSafe(this, e);
         }
     }
 }
